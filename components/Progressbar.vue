@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, computed, ref } from "vue";
+import { defineProps, computed, ref, onMounted, watch, nextTick } from "vue";
 
 // Define the properties passed to this component
 const props = defineProps({
@@ -23,6 +23,9 @@ const isStripedHovered = ref(false);
 const isGreyHovered = ref(false);
 const mouseX = ref(0);
 const mouseY = ref(0);
+const nprogress = ref(null);
+const nbaseline = ref(null);
+const topnbaseline = ref(null);
 
 // Function to calculate baseline values
 const calculateBaselineValues = () => {
@@ -32,9 +35,9 @@ const calculateBaselineValues = () => {
 
   const totalDuration = deadline - today;
   const elapsedDuration = baseline - today;
-  console.log(deadline, baseline, today);
 
   const baselineValues = (elapsedDuration / totalDuration) * props.target;
+
   return baselineValues;
 };
 
@@ -43,20 +46,48 @@ const baselineProgress = computed(
   () => (calculateBaselineValues() / props.target) * 100
 );
 
-// Compute if the progress is special (either 0%, 100%, or matches baseline progress)
-const isSpecialProgress = computed(() => {
-  return (
-    progress.value === 0 ||
-    progress.value === 100 ||
-    Math.round(baselineProgress.value) === progress.value
-  );
-});
-
 // Function to update mouse position for hover effects
 const updateMousePosition = (event) => {
   mouseX.value = event.clientX;
   mouseY.value = event.clientY;
 };
+
+// Function to check if elements are overlapping using IntersectionObserver
+const checkOverlappingUsingIntersectionObserver = () => {
+  const rect1 = nbaseline.value;
+  const rect2 = nprogress.value;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        topnbaseline.value = 20;
+      } else {
+        topnbaseline.value = 0;
+      }
+    });
+  });
+
+  if (rect1 && rect2) {
+    observer.observe(rect1);
+    observer.observe(rect2);
+  }
+};
+
+onMounted(() => {
+  watch(
+    () => props.value,
+    async () => {
+      await nextTick();
+      if (nprogress.value && nbaseline.value) {
+        checkOverlappingUsingIntersectionObserver();
+      }
+    }
+  );
+
+  if (nprogress.value && nbaseline.value) {
+    checkOverlappingUsingIntersectionObserver();
+  }
+});
 </script>
 
 <template>
@@ -151,54 +182,37 @@ const updateMousePosition = (event) => {
     </div>
 
     <!-- Progress bar labels and indicators -->
-    <div class="progress-container cursor-pointer">
-      <p
-        @mouseover="isGreyHovered = true"
-        @mouseleave="isGreyHovered = false"
-        @mousemove="updateMousePosition"
-        ref="0"
-        class="text-left"
-      >
+    <div class="relative flex justify-between cursor-pointer">
+      <p ref="0" class="left-0 absolute top-2.5">
         {{ switchState ? "0%" : `0${unit}` }}
       </p>
-      <p
-        ref="100"
-        class="text-right"
-        @mouseover="isGreyHovered = true"
-        @mouseleave="isGreyHovered = false"
-        @mousemove="updateMousePosition"
-      >
+      <p ref="100" class="right-0 absolute top-2.5">
         {{ switchState ? "100%" : `${target}${unit}` }}
       </p>
-
       <p
-        @mouseover="isStripedHovered = true"
-        @mouseleave="isStripedHovered = false"
-        @mousemove="updateMousePosition"
+        ref="nprogress"
+        :style="{ left: `calc(${progress}% )` }"
+        class="absolute z-2"
+      >
+        {{ switchState ? `${progress}%` : `${value}${unit}` }}
+      </p>
+      <p
         v-if="
           Math.round(baselineProgress) !== 0 &&
           Math.round(baselineProgress) !== 100
         "
         ref="nbaseline"
-        :style="{ left: `calc(${baselineProgress}% - 2px)` }"
-        class="absolutes nbaseline"
+        :style="{
+          left: `calc(${baselineProgress}% )`,
+          top: `${topnbaseline}px`,
+        }"
+        class="absolute z-1"
       >
         {{
           switchState
             ? `${Math.round(baselineProgress)}%`
             : `${Math.round(calculateBaselineValues())}${unit}`
         }}
-      </p>
-      <p
-        @mouseover="isGreenHovered = true"
-        @mouseleave="isGreenHovered = false"
-        @mousemove="updateMousePosition"
-        v-if="!isSpecialProgress"
-        ref="nprogress"
-        :style="{ left: `calc(${progress}% - 2px)` }"
-        class="absolutes nprogress"
-      >
-        {{ switchState ? `${progress}%` : `${value}${unit}` }}
       </p>
     </div>
   </div>
@@ -236,8 +250,7 @@ const updateMousePosition = (event) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #
-      ;
+  background-color: #ccc;
   transition: 0.4s;
   border-radius: 1.5em;
 }
@@ -274,39 +287,6 @@ input:checked + .slider:before {
 }
 
 p {
-  font-size: 0.75rem;
-}
-
-/* Progress container and labels */
-.progress-container {
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-}
-
-.text-left,
-.text-right {
-  position: relative;
-}
-
-.absolutes {
-  position: absolute;
-  top: 0;
-  white-space: nowrap;
-  transform: translateX(-50%);
-}
-
-/* Overlap handling for labels */
-.nprogress,
-.nbaseline {
-  white-space: nowrap;
-  z-index: 1;
-}
-
-.nprogress + .nprogress,
-.nbaseline + .nbaseline,
-.nprogress + .nbaseline,
-.nbaseline + .nprogress {
-  top: 20px;
+  font-size: 0.7rem;
 }
 </style>

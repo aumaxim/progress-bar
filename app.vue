@@ -29,32 +29,44 @@ const calculateValues = () => {
 </script>
 
 <template>
-  <div class="mt-10 ml-5">
-    <!-- Input fields for user to enter values -->
-    <Input v-model="baselineDate" label="Baseline Date" inputType="date" />
-    <Input v-model="deadline" label="Deadline" inputType="date" />
-    <Input v-model="target" label="Target" inputType="number" />
-    <Input v-model="value" label="value" inputType="number" />
-    <Input v-model="unit" label="unit" inputType="text" />
+  <div>
+    <div class="mt-10 ml-5">
+      <!-- Input fields for user to enter values -->
+      <Input v-model="baselineDate" label="Baseline Date" inputType="date" />
+      <Input v-model="deadline" label="Deadline" inputType="date" />
+      <Input v-model="target" label="Target" inputType="number" />
+      <Input v-model="value" label="value" inputType="number" />
+      <Input v-model="unit" label="unit" inputType="text" />
 
-    <!-- Button to trigger calculation -->
-    <button
-      @click="calculateValues"
-      class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-    >
-      Calculate
-    </button>
-  </div>
+      <!-- Button to trigger calculation -->
+      <button
+        @click="calculateValues"
+        class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Calculate
+      </button>
+    </div>
 
-  <div class="mt-10 ml-5">
-    <!-- Progress bar component displaying calculated values -->
-    <Progressbar
-      :value="calculatedvalue"
-      :target="calculatedTarget"
-      :today="calculatedToday"
-      :baselineDate="calculatedBaselineDate"
-      :deadline="calculatedDeadline"
-      :unit="calculatedUnit"
-    />
+    <div class="mt-8">
+      <!-- Progress bar component displaying calculated values -->
+      <Progressbar
+        :value="calculatedvalue"
+        :target="calculatedTarget"
+        :today="calculatedToday"
+        :baselineDate="calculatedBaselineDate"
+        :deadline="calculatedDeadline"
+        :unit="calculatedUnit"
+      />
+    </div>
   </div>
 </template>
+<style>
+body,
+html {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>
