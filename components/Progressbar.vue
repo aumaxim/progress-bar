@@ -183,13 +183,28 @@ onMounted(() => {
 
     <!-- Progress bar labels and indicators -->
     <div class="relative flex justify-between cursor-pointer">
-      <p ref="0" class="left-0 absolute top-2.5">
+      <p
+        @mouseover="isGreyHovered = true"
+        @mouseleave="isGreyHovered = false"
+        @mousemove="updateMousePosition"
+        ref="0"
+        class="left-0 absolute top-2.5"
+      >
         {{ switchState ? "0%" : `0${unit}` }}
       </p>
-      <p ref="100" class="right-0 absolute top-2.5">
+      <p
+        @mouseover="isGreyHovered = true"
+        @mouseleave="isGreyHovered = false"
+        @mousemove="updateMousePosition"
+        ref="100"
+        class="right-0 absolute top-2.5"
+      >
         {{ switchState ? "100%" : `${target}${unit}` }}
       </p>
       <p
+        @mouseover="isGreenHovered = true"
+        @mouseleave="isGreenHovered = false"
+        @mousemove="updateMousePosition"
         ref="nprogress"
         :style="{ left: `calc(${progress}% )` }"
         class="absolute z-2"
@@ -197,6 +212,9 @@ onMounted(() => {
         {{ switchState ? `${progress}%` : `${value}${unit}` }}
       </p>
       <p
+        @mouseover="isStripedHovered = true"
+        @mouseleave="isStripedHovered = false"
+        @mousemove="updateMousePosition"
         v-if="
           Math.round(baselineProgress) !== 0 &&
           Math.round(baselineProgress) !== 100
@@ -258,8 +276,8 @@ onMounted(() => {
 .slider:before {
   position: absolute;
   content: "";
-  height: 0.75em;
-  width: 0.75em;
+  height: 0.65em;
+  width: 0.65em;
   left: 0.15em;
   bottom: 0.15em;
   background-color: white;
